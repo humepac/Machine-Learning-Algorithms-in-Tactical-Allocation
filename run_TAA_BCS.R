@@ -245,7 +245,6 @@ for(a in c(0.5, seq(0.85,.95,0.05))){
   final_caret <- rbind(anreport, sk, ku, drisk)
   plot(cumsum(returns), type = 'l')
   print(a)
-  write.csv(final_caret, paste("final",a*100, ".csv", sep = ""))
 }
 
 ############################################################################################################
@@ -271,7 +270,6 @@ for( a in c(0.5,0.85, 0.9, 0.95)){
     acckappaauc[i,] <- c(res$overall[1:2],res$byClass[1:2],au) #form the vector containing all the statistics
     i=i+1
   }
-  write.csv(acckappaauc, file = paste("standardize", a*100 , ".csv", sep = "" ))
 }
 
 ################################################################################################################################################
