@@ -1,7 +1,7 @@
 ################################################################################################################################################
 #In Search of Return Predictability: Application of Machine Learning Algorithms in Tactical Allocation
 ################################################################################################################################################
-#written by Kris Boudt (Ghent University, Vrije Universiteit Brussel/Amsterdam, Finvex),
+#written by Kris Boudt (Ghent University, Vrije Universiteit Brussel/Amsterdam),
 #Muzafer Cela (Vrije Universiteit Brussel; corresponding author; muzafer.cela@vub.be) and Majeed Simaan (Stevens Institute of Technology).
 
 #The following script contains the implementation of a tactical asset allocation strategy as presented in the book chapter.
