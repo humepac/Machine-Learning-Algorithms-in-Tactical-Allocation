@@ -235,16 +235,42 @@ returns <- matrix(0, nrow= nrow(final), ncol= (ncol(final)-2 ))
 returns <- xts(returns, order.by = as.Date(rownames(final[,0])))
 colnames(returns) <- colnames(final)[-c(1,2)]
 
-for(a in c(0.5, seq(0.85,.95,0.05))){
-  i <- 3:ncol(final);    returns[,i-2] <- ((((1-final[,i]) >= a)*(((1-final[,i])*final[,1])+((final[,i])*final[,2])))+(((1-final[,i]) < a)* final[,2]))
+TC_f <- function(TC,i) { # creat the function outputs the annualized returns of a ML algorithm with transaction costs included 
+  R_i <- returns[-1,i] - dummyfinal.ch[,i]*TC
+  return(Return.annualized(R_i))
+}
 
+for(a in c(0.5, seq(0.85,.95,0.05))){
+  a <- 0.5
+  dummyfinal <- matrix(NA, nrow= nrow(final), ncol= (ncol(final)-2))# dummyfinal is a matrix that will contain all the changes in the positions that are taken
+  i <- 3:ncol(final); dummyfinal <- ifelse(((1-final[,i])> a), 1,0) # display the amount of times the output probability exceeds the risk aversion threshold
+  ii <- 1: ncol(dummyfinal); dummyfinal.ch <- abs(diff(dummyfinal[,ii])) # extract the amount of changes in the taken postions  
+  amount.tr <- apply(dummyfinal.ch, 2, sum) # compute a sum of the changes in the taken positions 
+  amount.tr <- round(amount.tr/14, 3) # annualize the changes in the taken positions 
+  
+  for(i in c(3:ncol(final))){
+    returns[,i-2] <- ((((1-final[,i]) >= a)*(((1-final[,i])*final[,1])+((final[,i])*final[,2])))+(((1-final[,i]) < a)* final[,2]))
+  }
   anreport <- table.AnnualizedReturns(returns)
   sk <- skewness(returns)
   ku <- kurtosis(returns)
   drisk <- table.DownsideRisk(returns, MAR =0.01/252 )
-  final_caret <- rbind(anreport, sk, ku, drisk)
+  
+  # solve for TC that makes it equal to the benchmark
+  TC <- c()
+  for(i in 1:10){
+    TC[i] <- ifelse(is.numeric(try(uniroot(function(TC) TC_f(TC,c(i)) - TC_f(TC,11) ,c(-0.1,0.1))$root ,outFile = print("Error")))== T, 
+                    uniroot(function(TC) TC_f(TC,c(i)) - TC_f(TC,11) ,c(-0.1,0.1))$root, NA)
+    #Note that the ifelse(try()) part of the code has been added to avoid that the loop would stop if the sollution 
+    #do not exist
+    print(i)
+  }
+  TC <- TC*100 #display the results in %
+  
+  final_caret <- rbind(anreport, sk, ku, drisk, amount.tr, c(TC, NA))# Note that the maximum transaction cost equivalent can take any value for the benchmark itself leading to (TC, NA) 
   plot(cumsum(returns), type = 'l')
   print(a)
+  write.csv(final_caret, paste("final",a*100, ".csv", sep = ""))
 }
 
 ############################################################################################################
